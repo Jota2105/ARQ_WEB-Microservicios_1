@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Productos | Laboratorio de Microservicios</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="layout">
+    <header class="hero">
+      <div class="eyebrow">ARQUITECTURA DE SOFTWARE · SERVICIO 1</div>
+      <h1>Microservicio Productos</h1>
+      <p>Este servicio administra su propia base <strong>productos.db</strong> en un volumen independiente.</p>
+      <span class="pill ok">● Servicio Productos activo · puerto 8001</span>
+    </header>
+    {% if creado %}<div role="status" class="alert good">Producto registrado correctamente.</div>{% endif %}
+    {% if error %}<div role="alert" class="alert bad">{{ error }}</div>{% endif %}
+    <section class="card">
+      <h2>1. Registrar un producto</h2>
+      <form method="post" action="/registrar" class="form-grid">
+        <label>Nombre del producto <input name="nombre" minlength="2" maxlength="80" required placeholder="Ejemplo: Teclado" /></label>
+        <label>Precio en dólares (USD) <input name="precio" type="number" min="0.01" max="99999.99" step="0.01" required placeholder="25.50" /></label>
+        <button type="submit">Guardar producto</button>
+      </form>
+    </section>
+    <section class="card">
+      <div class="section-head"><h2>2. Consultar productos</h2><span class="counter">{{ productos|length }} registros</span></div>
+      {% if productos %}
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Nombre</th><th>Precio USD</th></tr></thead><tbody>
+      {% for p in productos %}<tr><td>{{ p.id }}</td><td>{{ p.nombre }}</td><td>${{ p.precio }}</td></tr>{% endfor %}
+      </tbody></table></div>
+      {% else %}<p class="muted">No existen productos registrados todavía. Cree el primero.</p>{% endif %}
+    </section>
+    <footer>API consultable en el navegador: <a href="/api/productos" target="_blank" rel="noopener">/api/productos</a> · Salud: <a href="/health" target="_blank" rel="noopener">/health</a></footer>
+  </main>
+</body>
+</html>

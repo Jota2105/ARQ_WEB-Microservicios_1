@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pedidos | Laboratorio de Microservicios</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="layout">
+    <header class="hero blue">
+      <div class="eyebrow">ARQUITECTURA DE SOFTWARE · SERVICIO 2</div>
+      <h1>Microservicio Pedidos</h1>
+      <p>Almacena pedidos en <strong>pedidos.db</strong>. Consulta Productos por HTTP, no mediante su base de datos.</p>
+      {% if conectado %}
+        <span class="pill ok">● Productos disponible por HTTP</span>
+      {% else %}
+        <span class="pill warn">● Productos no disponible por HTTP</span>
+      {% endif %}
+    </header>
+    {% if creado %}<div role="status" class="alert good">Pedido registrado correctamente mediante comunicación HTTP.</div>{% endif %}
+    {% if error %}<div role="alert" class="alert bad">{{ error }}</div>{% endif %}
+    {% if not conectado %}<div role="alert" class="alert warn">Productos está detenido o no responde. No es posible validar nuevos productos, pero la consulta de pedidos continúa disponible.</div>{% endif %}
+    <section class="card">
+      <h2>1. Registrar un pedido</h2>
+      <p class="hint">Al guardar, Pedidos llama a <code>GET http://productos:8000/api/productos/&lt;id&gt;</code> desde la red interna de Docker.</p>
+      <form method="post" action="/registrar" class="form-grid">
+        <label>Producto
+          {% if conectado and productos %}
+          <select name="producto_id" required>
+            <option value="">Seleccione un producto</option>
+            {% for p in productos %}<option value="{{ p.id }}">#{{ p.id }} · {{ p.nombre }} · ${{ p.precio }}</option>{% endfor %}
+          </select>
+          {% else %}
+          <input type="number" name="producto_id" min="1" required placeholder="ID del producto, p. ej. 1" />
+          {% endif %}
+        </label>
+        <label>Cantidad <input name="cantidad" type="number" min="1" max="99" value="1" required /></label>
+        <button type="submit">{% if conectado %}Guardar pedido{% else %}Intentar registrar pedido (prueba de fallo){% endif %}</button>
+      </form>
+      {% if conectado and not productos %}<p class="muted">Primero registre un producto en http://localhost:8001.</p>{% endif %}
+      {% if not conectado %}<p class="muted">En la prueba de fallo, escriba el ID de un producto que haya registrado antes y presione «Intentar registrar pedido». El servicio mostrará un error controlado y no guardará el pedido.</p>{% endif %}
+    </section>
+    <section class="card">
+      <div class="section-head"><h2>2. Consulta de pedidos</h2><span class="counter">{{ pedidos|length }} registros</span></div>
+      {% if pedidos %}
+      <div class="table-wrap"><table><thead><tr><th>ID pedido</th><th>Producto</th><th>Precio USD</th><th>Cant.</th><th>Total USD</th><th>Fecha (UTC)</th></tr></thead><tbody>
+      {% for p in pedidos %}<tr><td>#{{ p.id }}</td><td>{{ p.producto_nombre }}</td><td>${{ p.precio_unitario }}</td><td>{{ p.cantidad }}</td><td><strong>${{ p.total }}</strong></td><td>{{ p.creado_utc }}</td></tr>{% endfor %}
+      </tbody></table></div>
+      {% else %}<p class="muted">Aún no hay pedidos registrados.</p>{% endif %}
+    </section>
+    <footer>API consultable en el navegador: <a href="/api/pedidos" target="_blank" rel="noopener">/api/pedidos</a> · Salud propia: <a href="/health" target="_blank" rel="noopener">/health</a></footer>
+  </main>
+</body>
+</html>
